@@ -17,7 +17,7 @@ var (
 		Debug   bool `name:"debug" help:"maximum debug output including scraped files"`
 
 		Show struct {
-			TargetTime       string `name:"target-time" short:"t" default:"08:00" help:"assume target time in format '15:04'"`
+			TargetTime       string `name:"target-time" short:"t" help:"assume target time in format '15:04' (default: derived from workhours, else 08:00)"`
 			LeaveTime        string `name:"leave-time" short:"l" default:"" help:"simulate a given leave time in format '15:04'"`
 			BreakTime        string `name:"break-time" short:"b" default:"" help:"simulate a given break time in format '15:04'"`
 			ForceReload      bool   `name:"force-reload" short:"f" help:"ignore local cache and force refresh of entries"`
@@ -26,6 +26,10 @@ var (
 
 			SaveConfig bool `name:"save-config" help:"DEPRECATED - write changes from command line parameters to user config"`
 		} `cmd:"show" default:"withargs" help:"Show today's stats"`
+
+		Set struct {
+			Settings []string `arg:"" name:"key=value" help:"settings to persist: workhours=<weekly hours>, workdays=<days per week, default 5>; an empty value resets"`
+		} `cmd:"set" help:"Persist user settings, e.g. 'gohome set workhours=36'"`
 
 		DumpColors struct {
 		} `cmd:"dump-colors" help:"Populates colors.json in the application config directory"`
@@ -57,6 +61,9 @@ func execCmd(cmd string) error {
 	case "show":
 		return cmdShow()
 
+	case "set <key=value>":
+		return cmdSet(cli.Set.Settings)
+
 	case "dump-colors":
 		return dumpColors()
 
@@ -77,6 +84,35 @@ func cmdShow() error {
 	return nil
 }
 
+func cmdSet(settings []string) error {
+	usrConf, err := ReadUserConfig()
+	if err != nil {
+		return fmt.Errorf("read user config: %w", err)
+	}
+	for _, setting := range settings {
+		if err := usrConf.ApplySetting(setting); err != nil {
+			return err
+		}
+	}
+	if err := usrConf.Validate(); err != nil {
+		return err
+	}
+	if err := WriteUserConfig(usrConf); err != nil {
+		return fmt.Errorf("write user config: %w", err)
+	}
+
+	targetTime, err := resolveTargetTime("", usrConf)
+	if err != nil {
+		return err
+	}
+	if _, ok := usrConf.DailyTarget(); ok {
+		stdio.Println("%gh / %d days per week -> daily target %s", usrConf.WeeklyHours, usrConf.EffectiveWorkDays(), formatDurationMinutes(targetTime))
+	} else {
+		stdio.Println("no workhours set -> daily target %s", formatDurationMinutes(targetTime))
+	}
+	return nil
+}
+
 func process() error {
 	var usrConfIsOK bool
 	usrConf, err := ReadUserConfig()
@@ -86,20 +122,12 @@ func process() error {
 		usrConfIsOK = true
 	}
 
-	if len(cli.Show.TargetTime) == 0 && len(usrConf.TargetTimeStr) > 0 {
-		cli.Show.TargetTime = usrConf.TargetTimeStr
+	targetTime, err := resolveTargetTime(cli.Show.TargetTime, usrConf)
+	if err != nil {
+		return err
 	}
-
-	targetTime := time.Duration(8) * time.Hour
 	if len(cli.Show.TargetTime) > 0 {
-		t, err := time.Parse("15:04", cli.Show.TargetTime)
-		if err != nil {
-			return fmt.Errorf("failed to parse target time: %s", err.Error())
-		}
-		targetTime = time.Duration(t.Hour())*time.Hour + time.Duration(t.Minute())*time.Minute
-		//TODO check target time
-
-		usrConf.TargetTimeStr = fmt.Sprintf("%02d:%02d", t.Hour(), t.Minute())
+		usrConf.TargetTimeStr = formatDurationMinutes(targetTime)
 	}
 
 	if cli.Show.SaveConfig {

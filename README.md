@@ -28,7 +28,19 @@ You can edit your user settings in `~/.config/gohome/userconfig.json`. Following
 
 | Key | Description |
 | --- | ----------- |
-| `TargetTime` | A target time as provided by parameter `-t` in format `08:00`. |
+| `WeeklyHours` | Contractual working hours per week, e.g. `36`. The daily target is derived as `WeeklyHours / WorkDays`. |
+| `WorkDays` | Working days per week (default `5`). |
+| `TargetTime` | A target time as provided by parameter `-t` in format `08:00`. Ignored when `WeeklyHours` is set. |
+
+Set your weekly hours from the command line:
+
+```
+gohome set workhours=36            # 36h / 5 days -> daily target 07:12
+gohome set workhours=30 workdays=4 # 30h / 4 days -> daily target 07:30
+gohome set workhours=              # reset
+```
+
+Your overtime for the day and the resulting flexi-time balance are calculated against this daily target. The parameter `-t` still overrides it for a single run.
 
 Use parameter `--save-config` to persist command line parameters in user config.
 
