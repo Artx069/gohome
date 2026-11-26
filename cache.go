@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/sbreitf1/gohome/internal/pkg/stdio"
+	"github.com/Artx069/gohome/internal/pkg/stdio"
 )
 
 type cacheData struct {

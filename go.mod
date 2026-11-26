@@ -1,4 +1,4 @@
-module github.com/sbreitf1/gohome
+module github.com/Artx069/gohome
 
 go 1.25.0
 

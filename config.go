@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sbreitf1/gohome/internal/pkg/jcrypt"
-	"github.com/sbreitf1/gohome/internal/pkg/stdio"
+	"github.com/Artx069/gohome/internal/pkg/jcrypt"
+	"github.com/Artx069/gohome/internal/pkg/stdio"
 
 	"github.com/adrg/xdg"
 )

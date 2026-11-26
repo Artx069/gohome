@@ -2,6 +2,8 @@
 
 Util to show current worktime and possible leave times with Matrix integration.
 
+Fork of [sbreitf1/gohome](https://github.com/sbreitf1/gohome) with support for the new Matrix login page (`login.jsf`) and configurable weekly working hours.
+
 ![example view of current worktime](example.png)
 
 ## Getting started
@@ -9,7 +11,7 @@ Util to show current worktime and possible leave times with Matrix integration.
 To download and install the utility execute the following commands:
 
 ```
-go install github.com/sbreitf1/gohome@latest
+go install github.com/Artx069/gohome@latest
 ```
 
 Now start it with `gohome` from command line.

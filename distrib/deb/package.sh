@@ -29,10 +29,10 @@ echo "prepare package files"
 mkdir -p ./gohome/DEBIAN
 echo "Package: gohome
 Version: ${VERSION}
-Maintainer: sbreitf1
+Maintainer: Artx069
 Architecture: amd64
 Installed-Size: $INST_SIZE
-Homepage: https://github.com/sbreitf1/gohome
+Homepage: https://github.com/Artx069/gohome
 Description: Calculates your leave time from Matrix entries." > ./gohome/DEBIAN/control
 
 dpkg-deb --build gohome gohome_${VERSION}_amd64.deb
